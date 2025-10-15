@@ -1,0 +1,82 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: okecbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./api
+    environment:
+      PORT: 4000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/okecbot
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-changeme}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-32_byte_base64_key_here}
+      ALLOW_ANY_URL: ${ALLOW_ANY_URL:-false}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,api,web}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data/results:/data/results
+      - ./sample_pages:/usr/src/app/sample_pages:ro
+
+  worker:
+    build: ./worker
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/okecbot
+      REDIS_URL: redis://redis:6379
+      RESULTS_DIR: /data/results
+      WORKER_CONCURRENCY: ${WORKER_CONCURRENCY:-2}
+      PER_DOMAIN_CONCURRENCY: ${PER_DOMAIN_CONCURRENCY:-1}
+    depends_on:
+      api:
+        condition: service_started
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data/results:/data/results
+
+  web:
+    build: ./web
+    environment:
+      VITE_API_URL: http://localhost:4000
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "5173:5173"
+
+volumes:
+  db_data:
+
+

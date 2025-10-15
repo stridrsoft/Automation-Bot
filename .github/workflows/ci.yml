@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: okecbot
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd="pg_isready -U postgres" --health-interval=5s --health-timeout=5s --health-retries=10
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval=5s --health-timeout=5s --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: API - Install, Build, Test
+        working-directory: api
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/okecbot
+          REDIS_URL: redis://localhost:6379
+          JWT_SECRET: testsecret
+          ENCRYPTION_KEY: dGVzdGtleWZvcmdjaGFyc2V0MzJieXRlcw==
+          ALLOW_ANY_URL: 'true'
+        run: |
+          npm ci
+          npx prisma generate
+          npx prisma db push
+          npm run build
+          npm test
+
+      - name: Worker - Install, Build, Test
+        working-directory: worker
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/okecbot
+          REDIS_URL: redis://localhost:6379
+          RESULTS_DIR: /home/runner/work/results
+        run: |
+          npm ci
+          npx prisma generate
+          npx playwright install --with-deps
+          npm run build
+          npm test
+
+      - name: Web - Install, Build
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Docker - Build images
+        run: |
+          docker build -t api ./api
+          docker build -t worker ./worker
+          docker build -t web ./web
+
+

@@ -1,0 +1,29 @@
+{
+  "name": "okecbot-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/worker.ts",
+    "build": "tsc -p .",
+    "start": "node dist/worker.js",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.18.0",
+    "bullmq": "^5.8.1",
+    "fastify": "^4.26.2",
+    "ioredis": "^5.3.2",
+    "pino": "^9.4.0",
+    "playwright": "^1.48.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "prisma": "^5.18.0",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.5",
+    "@playwright/test": "^1.48.0"
+  }
+}
+
+

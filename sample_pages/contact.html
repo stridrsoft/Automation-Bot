@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contact Form (Local Sample)</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; padding: 2rem; }
+      label { display: block; margin-top: 1rem; }
+      input, textarea { width: 320px; padding: 0.5rem; }
+      button { margin-top: 1rem; padding: 0.5rem 1rem; }
+      #success { display: none; color: green; margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Contact Us</h1>
+    <form id="contact">
+      <label>Name <input name="name" required /></label>
+      <label>Email <input type="email" name="email" required /></label>
+      <label>Message <textarea name="message" required></textarea></label>
+      <button type="submit">Submit</button>
+    </form>
+    <div id="success">Thanks! Your message has been received.</div>
+
+    <script>
+      const form = document.getElementById('contact');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        setTimeout(() => {
+          document.getElementById('success').style.display = 'block';
+        }, 200);
+      });
+    </script>
+  </body>
+  </html>
+
+
