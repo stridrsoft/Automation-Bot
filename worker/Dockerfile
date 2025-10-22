@@ -15,7 +15,6 @@ ENV RESULTS_DIR=/data/results
 RUN mkdir -p /data/results
 
 EXPOSE 4001
-
 CMD ["node", "dist/worker.js"]
 
 
