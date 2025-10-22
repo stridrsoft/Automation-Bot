@@ -55,16 +55,18 @@ async function main() {
         url: jobRec.url, 
         steps: jobRec.stepsJson as any[], 
         runId: run.id,
-        config: jobRec.configJson as any
+        config: (jobRec as any).configJson as any
       });
       release(host);
       if (result.ok) {
-        await prisma.run.update({ where: { id: run.id }, data: { status: 'SUCCESS', logs: result.logs, finishedAt: new Date() } });
+        await prisma.run.update({ where: { id: run.id }, data: { status: 'SUCCESS', logs: result.logs || '', finishedAt: new Date() } });
         successCount++;
       } else {
+        const errorText = 'error' in result ? (result as any).error || 'Unknown' : 'Unknown';
+        const screenshotPath = 'screenshot' in result ? (result as any).screenshot ?? null : null;
         await prisma.run.update({
           where: { id: run.id },
-          data: { status: 'FAILED', logs: result.logs || '', error: result.error || 'Unknown', screenshot: result.screenshot || null, finishedAt: new Date() },
+          data: { status: 'FAILED', logs: result.logs || '', error: errorText, screenshot: screenshotPath, finishedAt: new Date() },
         });
         failureCount++;
       }

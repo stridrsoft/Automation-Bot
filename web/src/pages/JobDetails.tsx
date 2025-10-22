@@ -8,6 +8,22 @@ export default function JobDetails() {
   const { id } = useParams();
   const token = localStorage.getItem('token');
   const [job, setJob] = useState<any | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Poll job details when there is a RUNNING run to reflect live updates
+  useEffect(() => {
+    let timer: any;
+    async function fetchOnce() {
+      const r = await axios.get(`${API_URL}/jobs/${id}`, { headers: { Authorization: `Bearer ${token}` } });
+      setJob(r.data);
+      const hasRunning = Array.isArray(r.data?.runs) && r.data.runs.some((x: any) => x.status === 'RUNNING' || x.status === 'PENDING');
+      if (hasRunning) {
+        timer = setTimeout(fetchOnce, 1500);
+      }
+    }
+    fetchOnce().catch(() => setJob(null));
+    return () => { if (timer) clearTimeout(timer); };
+  }, [id]);
 
   useEffect(() => {
     axios
@@ -24,11 +40,16 @@ export default function JobDetails() {
         <h1 className="text-xl font-semibold">{job.name}</h1>
         <form method="post" action="#" onSubmit={async (e) => {
           e.preventDefault();
-          await axios.post(`${API_URL}/jobs/${job.id}/run`, {}, { headers: { Authorization: `Bearer ${token}` } });
-          const r = await axios.get(`${API_URL}/jobs/${job.id}`, { headers: { Authorization: `Bearer ${token}` } });
-          setJob(r.data);
+          setIsSubmitting(true);
+          try {
+            await axios.post(`${API_URL}/jobs/${job.id}/run`, {}, { headers: { Authorization: `Bearer ${token}` } });
+            const r = await axios.get(`${API_URL}/jobs/${job.id}`, { headers: { Authorization: `Bearer ${token}` } });
+            setJob(r.data);
+          } finally {
+            setIsSubmitting(false);
+          }
         }}>
-          <button className="bg-blue-600 text-white px-3 py-1 rounded">Run Now</button>
+          <button disabled={isSubmitting} className={`px-3 py-1 rounded text-white ${isSubmitting ? 'bg-blue-300 cursor-not-allowed' : 'bg-blue-600'}`}>{isSubmitting ? 'Starting…' : 'Run Now'}</button>
         </form>
       </div>
 

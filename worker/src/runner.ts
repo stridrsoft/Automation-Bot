@@ -4,7 +4,7 @@ import path from 'path';
 import { RESULTS_DIR } from './config';
 
 type Step = {
-  action: 'fill' | 'click' | 'wait' | 'screenshot';
+  action: 'fill' | 'click' | 'wait' | 'screenshot' | 'pause';
   selector?: string;
   value?: string;
   timeout?: number;
@@ -37,6 +37,12 @@ type MultiBotConfig = {
   delayBetweenBots?: number; // milliseconds
   randomizeOrder?: boolean;
 };
+
+// Lightweight logger for multi-bot scope (single-bot defines its own scoped logger)
+function log(message: string) {
+  // eslint-disable-next-line no-console
+  console.log(`[runner] ${message}`);
+}
 
 type VisualModeConfig = {
   enabled: boolean;
@@ -282,7 +288,8 @@ async function runSingleBot(job: { id: string; url: string; steps: Step[]; runId
       // Wait for user interaction
       await page.waitForFunction(() => {
         const overlay = document.querySelector('div[style*="position: fixed"]');
-        return !overlay || overlay.style.display === 'none';
+        // Cast to any/HTMLElement to avoid Element.style type error in Node build context
+        return !overlay || (overlay as any).style?.display === 'none';
       }, { timeout: 0 }); // No timeout - wait indefinitely
     }
   }
