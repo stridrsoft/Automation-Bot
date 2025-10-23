@@ -20,7 +20,7 @@ let logFile;
 try {
   logFile = pino.destination({ dest: `${resultsDir}/worker.log`, append: true, mkdir: true });
 } catch (error) {
-  console.warn('Could not create log file, using stdout only:', error.message);
+  console.warn('Could not create log file, using stdout only:', (error as Error).message);
   logFile = process.stdout;
 }
 const logger = pino({ level: 'info' }, pino.multistream([{ stream: process.stdout }, { stream: logFile }]));
