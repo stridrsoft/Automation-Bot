@@ -15,7 +15,8 @@ async function buildServer() {
   // Use relative paths instead of absolute paths
   const resultsDir = path.join(process.cwd(), 'results');
   const samplePagesDir = path.join(__dirname, '..', 'sample_pages');
-  const webDistDir = path.join(__dirname, '../web/dist');
+  // Change this line in server.ts
+  const webDistDir = path.join(process.cwd(), 'web/dist');
 
   // Only register static files if directories exist
   try {
