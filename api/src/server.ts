@@ -12,35 +12,60 @@ async function buildServer() {
   const app = Fastify({ logger: true });
   await app.register(cors, { origin: true });
 
-  // Serve results and sample pages statically
-  const resultsDir = '/data/results';
-  app.register(fastifyStatic, {
-    root: path.resolve(resultsDir),
-    prefix: '/results/',
-    decorateReply: false,
-  });
-  app.register(fastifyStatic, {
-    root: path.resolve(__dirname, '..', 'sample_pages'),
-    prefix: '/sample_pages/',
-    decorateReply: false,
-    serve: true,
-  });
+  // Use relative paths instead of absolute paths
+  const resultsDir = path.join(process.cwd(), 'results');
+  const samplePagesDir = path.join(__dirname, '..', 'sample_pages');
+  const webDistDir = path.join(__dirname, '../web/dist');
 
-  // Serve the built web app
-  app.register(fastifyStatic, {
-    root: path.join(__dirname, '../web/dist'),
-    prefix: '/',
-    decorateReply: false,
-  });
+  // Only register static files if directories exist
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(resultsDir)) {
+      app.register(fastifyStatic, {
+        root: resultsDir,
+        prefix: '/results/',
+        decorateReply: false,
+      });
+    }
+  } catch (err) {
+    console.log('Results directory not found, skipping...');
+  }
+
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(samplePagesDir)) {
+      app.register(fastifyStatic, {
+        root: samplePagesDir,
+        prefix: '/sample_pages/',
+        decorateReply: false,
+        serve: true,
+      });
+    }
+  } catch (err) {
+    console.log('Sample pages directory not found, skipping...');
+  }
+
+  try {
+    const fs = require('fs');
+    if (fs.existsSync(webDistDir)) {
+      app.register(fastifyStatic, {
+        root: webDistDir,
+        prefix: '/',
+        decorateReply: false,
+      });
+    }
+  } catch (err) {
+    console.log('Web dist directory not found, skipping...');
+  }
 
   app.get('/health', async () => ({ ok: true }));
 
   await app.register(authRoutes, { prefix: '/auth', prisma });
   await app.register(jobsRoutes, { prefix: '/jobs', prisma });
   
-  // Serve the web app on all routes (catch-all)
-  app.get('*', async (request, reply) => {
-    return reply.sendFile('index.html', path.join(__dirname, '../web/dist'));
+  // Simple root route
+  app.get('/', async (request, reply) => {
+    return { message: 'Automation Bot API', status: 'running' };
   });
   
   return app;
