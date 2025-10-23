@@ -8,9 +8,9 @@ COPY api/package*.json ./api/
 COPY web/package*.json ./web/
 COPY worker/package*.json ./worker/
 
-# Install dependencies (include dev deps for Playwright)
+# Install dependencies
 RUN cd api && npm ci --omit=dev
-RUN cd web && npm ci --omit=dev  
+RUN cd web && npm ci  # Include dev deps for Vite
 RUN cd worker && npm ci
 
 # Copy source code
