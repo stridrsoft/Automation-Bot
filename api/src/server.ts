@@ -15,7 +15,7 @@ async function buildServer() {
 
   const resultsDir = path.join(process.cwd(), 'results');
   const samplePagesDir = path.join(__dirname, '..', 'sample_pages');
-  const webDistDir = path.join(process.cwd(), 'web', 'dist');
+  const webDistDir = path.join(process.cwd(), '..', 'web', 'dist');
   
   // Debug logging
   console.log('Current working directory:', process.cwd());
