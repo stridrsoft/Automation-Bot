@@ -54,10 +54,10 @@ async function buildServer() {
 
   await app.register(authRoutes, { prefix: '/auth', prisma });
   await app.register(jobsRoutes, { prefix: '/jobs', prisma });
-
+  
   // If web build exists, serve SPA; otherwise keep JSON root
   if (fs.existsSync(path.join(webDistDir, 'index.html'))) {
-    app.get('/*', async (_req, reply) => {
+    app.get('*', async (_req, reply) => {
       return reply.sendFile('index.html', webDistDir);
     });
   } else {
