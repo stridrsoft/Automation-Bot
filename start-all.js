@@ -1,16 +1,23 @@
 // start-all.js
 const { spawn } = require('child_process');
+const path = require('path');
 
 // Start API
-const api = spawn('npm', ['start'], { cwd: './api', stdio: 'inherit' });
+const api = spawn('npm', ['start'], { 
+  cwd: path.join(__dirname, 'api'), 
+  stdio: 'inherit',
+  env: { ...process.env, PORT: process.env.PORT || 4000 }
+});
 
 // Start Worker  
-const worker = spawn('npm', ['start'], { cwd: './worker', stdio: 'inherit' });
+const worker = spawn('npm', ['start'], { 
+  cwd: path.join(__dirname, 'worker'), 
+  stdio: 'inherit' 
+});
 
-// Start Web (served by API in production)
-// The API will serve the built web files
-
+// Handle graceful shutdown
 process.on('SIGTERM', () => {
   api.kill();
   worker.kill();
+  process.exit(0);
 });
