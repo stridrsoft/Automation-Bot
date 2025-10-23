@@ -8,16 +8,16 @@ COPY api/package*.json ./api/
 COPY web/package*.json ./web/
 COPY worker/package*.json ./worker/
 
-# Install dependencies
+# Install dependencies (include dev deps for Playwright)
 RUN cd api && npm ci --omit=dev
 RUN cd web && npm ci --omit=dev  
-RUN cd worker && npm ci --omit=dev
+RUN cd worker && npm ci
 
 # Copy source code
 COPY . .
 
-# Install Playwright browsers (use the local installation)
-RUN cd worker && ./node_modules/.bin/playwright install chromium
+# Install Playwright browsers
+RUN cd worker && npx playwright install chromium
 
 # Build web app
 RUN cd web && npm run build
