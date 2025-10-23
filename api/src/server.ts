@@ -30,7 +30,14 @@ async function buildServer() {
 
   await app.register(authRoutes, { prefix: '/auth', prisma });
   await app.register(jobsRoutes, { prefix: '/jobs', prisma });
+  // Add this to serve the built web app
+  app.use(express.static(path.join(__dirname, '../web/dist')));
 
+  // Serve the web app on all routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../web/dist/index.html'));
+  });
+  
   return app;
 }
 
