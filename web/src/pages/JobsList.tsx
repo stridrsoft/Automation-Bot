@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000';
+const API_URL = (import.meta as any).env.VITE_API_URL || '';
 
 export default function JobsList() {
   const [jobs, setJobs] = useState<any[]>([]);

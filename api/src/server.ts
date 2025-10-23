@@ -55,10 +55,13 @@ async function buildServer() {
       decorateReply: false,
     });
     
-    // Redirect root to web app
-    app.get('/', async (_req, reply) => {
-      return reply.redirect('/app/');
-    });
+  // Redirect root to web app
+  app.get('/', async (_req, reply) => {
+    return reply.redirect('/app/');
+  });
+  
+  // Set environment variable for the web app
+  process.env.VITE_API_URL = process.env.VITE_API_URL || '';
   } else {
     app.get('/', async () => ({ message: 'Automation Bot API', status: 'running' }));
   }
