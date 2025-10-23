@@ -42,23 +42,22 @@ async function buildServer() {
     });
   }
 
-  if (fs.existsSync(webDistDir)) {
-    await app.register(fastifyStatic, {
-      root: webDistDir,
-      prefix: '/',
-      decorateReply: false,
-    });
-  }
-
   app.get('/health', async () => ({ ok: true }));
 
   await app.register(authRoutes, { prefix: '/auth', prisma });
   await app.register(jobsRoutes, { prefix: '/jobs', prisma });
   
-  // If web build exists, serve SPA; otherwise keep JSON root
-  if (fs.existsSync(path.join(webDistDir, 'index.html'))) {
-    app.get('*', async (_req, reply) => {
-      return reply.sendFile('index.html', webDistDir);
+  // Serve web app if it exists
+  if (fs.existsSync(webDistDir)) {
+    await app.register(fastifyStatic, {
+      root: webDistDir,
+      prefix: '/app',
+      decorateReply: false,
+    });
+    
+    // Redirect root to web app
+    app.get('/', async (_req, reply) => {
+      return reply.redirect('/app/');
     });
   } else {
     app.get('/', async () => ({ message: 'Automation Bot API', status: 'running' }));
