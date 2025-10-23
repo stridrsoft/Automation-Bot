@@ -52,8 +52,18 @@ async function buildServer() {
 
   app.get('/health', async () => ({ ok: true }));
 
-  await app.register(authRoutes, { prefix: '/auth', prisma });
-  await app.register(jobsRoutes, { prefix: '/jobs', prisma });
+  // Temporarily disable database-dependent routes
+  // await app.register(authRoutes, { prefix: '/auth', prisma });
+  // await app.register(jobsRoutes, { prefix: '/jobs', prisma });
+  
+  // Add simple mock routes for testing
+  app.post('/auth/login', async (request, reply) => {
+    return { token: 'mock-token', user: { email: 'admin@example.com' } };
+  });
+  
+  app.get('/jobs', async (request, reply) => {
+    return [];
+  });
   
   // Serve web app if it exists
   if (fs.existsSync(webDistDir)) {
