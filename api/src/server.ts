@@ -26,16 +26,21 @@ async function buildServer() {
     serve: true,
   });
 
+  // Serve the built web app
+  app.register(fastifyStatic, {
+    root: path.join(__dirname, '../web/dist'),
+    prefix: '/',
+    decorateReply: false,
+  });
+
   app.get('/health', async () => ({ ok: true }));
 
   await app.register(authRoutes, { prefix: '/auth', prisma });
   await app.register(jobsRoutes, { prefix: '/jobs', prisma });
-  // Add this to serve the built web app
-  app.use(express.static(path.join(__dirname, '../web/dist')));
-
-  // Serve the web app on all routes
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../web/dist/index.html'));
+  
+  // Serve the web app on all routes (catch-all)
+  app.get('*', async (request, reply) => {
+    return reply.sendFile('index.html', path.join(__dirname, '../web/dist'));
   });
   
   return app;
@@ -51,5 +56,3 @@ buildServer()
   });
 
 export { buildServer, prisma };
-
-
