@@ -3,7 +3,11 @@ services:
   - type: web
     name: automation-bot
     env: node
-    buildCommand: npm install
+    buildCommand: |
+      npm install
+      cd api && npm install && npm run build
+      cd ../web && npm install && npm run build  
+      cd ../worker && npm install && npx playwright install chromium && npm run build
     startCommand: node start-all.js
     envVars:
       - key: NODE_ENV
