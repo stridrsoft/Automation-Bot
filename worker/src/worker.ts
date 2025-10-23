@@ -15,12 +15,29 @@ const connection = new IORedis(process.env.REDIS_URL || 'redis://localhost:6379'
 let successCount = 0;
 let failureCount = 0;
 
-const logFile = pino.destination({ dest: '/data/results/worker.log', append: true, mkdir: true });
+const resultsDir = process.env.RESULTS_DIR || './results';
+let logFile;
+try {
+  logFile = pino.destination({ dest: `${resultsDir}/worker.log`, append: true, mkdir: true });
+} catch (error) {
+  console.warn('Could not create log file, using stdout only:', error.message);
+  logFile = process.stdout;
+}
 const logger = pino({ level: 'info' }, pino.multistream([{ stream: process.stdout }, { stream: logFile }]));
 const app = Fastify({ logger });
 app.get('/metrics', async () => ({ successCount, failureCount }));
 
 async function main() {
+  try {
+    // Test Redis connection
+    await connection.ping();
+    console.log('Redis connection successful');
+  } catch (error) {
+    console.error('Redis connection failed:', error);
+    console.log('Worker will not start without Redis connection');
+    process.exit(1);
+  }
+
   const queue = new Queue('jobs', { connection });
   const qe = new QueueEvents('jobs', { connection });
 

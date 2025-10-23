@@ -6,11 +6,14 @@ services:
     buildCommand: |
       npm install
       cd api && npm install && npm run build
-      cd ../web && npm install && npm run build  
-      cd ../worker && npm install && npx playwright install chromium && npm run build
+      cd ../web && npm install && npm run build
+      cd ../worker && npm install && npm run build && npx playwright install chromium
+      mkdir -p results
     startCommand: node start-all.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: RESULTS_DIR
+        value: ./results
