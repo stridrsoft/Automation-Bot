@@ -9,6 +9,14 @@ import { authRoutes } from './lib/auth';
 
 const prisma = new PrismaClient();
 
+// Test database connection
+prisma.$connect()
+  .then(() => console.log('Database connected successfully'))
+  .catch(err => {
+    console.error('Database connection failed:', err);
+    // Don't exit here, let the server try to start anyway
+  });
+
 async function buildServer() {
   const app = Fastify({ logger: true });
   await app.register(cors, { origin: true });
@@ -76,10 +84,19 @@ async function buildServer() {
 
 const port = Number(process.env.PORT || 4000);
 
+console.log('Starting server on port:', port);
+console.log('Environment:', process.env.NODE_ENV);
+
 buildServer()
-  .then(app => app.listen({ port, host: '0.0.0.0' }))
+  .then(app => {
+    console.log('Server built successfully, starting to listen...');
+    return app.listen({ port, host: '0.0.0.0' });
+  })
+  .then(() => {
+    console.log(`Server listening on port ${port}`);
+  })
   .catch(err => {
-    console.error(err);
+    console.error('Server startup error:', err);
     process.exit(1);
   });
 
