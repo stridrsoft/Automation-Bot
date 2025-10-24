@@ -78,11 +78,6 @@ async function buildServer() {
       return reply.redirect('/app/');
     });
     
-    // Handle SPA routing - serve index.html for all non-API routes
-    app.get('/app/*', async (_req, reply) => {
-      return reply.sendFile('index.html', webDistDir);
-    });
-    
     // Set environment variable for the web app
     process.env.VITE_API_URL = process.env.VITE_API_URL || '';
   } else {
