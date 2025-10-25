@@ -42,9 +42,9 @@ export default function JobDetails() {
           e.preventDefault();
           setIsSubmitting(true);
           try {
-            await axios.post(`${API_URL}/jobs/${job.id}/run`, {}, { headers: { Authorization: `Bearer ${token}` } });
-            const r = await axios.get(`${API_URL}/jobs/${job.id}`, { headers: { Authorization: `Bearer ${token}` } });
-            setJob(r.data);
+          await axios.post(`${API_URL}/jobs/${job.id}/run`, {}, { headers: { Authorization: `Bearer ${token}` } });
+          const r = await axios.get(`${API_URL}/jobs/${job.id}`, { headers: { Authorization: `Bearer ${token}` } });
+          setJob(r.data);
           } finally {
             setIsSubmitting(false);
           }
